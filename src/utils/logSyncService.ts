@@ -6,7 +6,7 @@ import { LogSessionContext } from './LogController';
 // We set a conservative batch threshold of 52 KB (53,248 bytes) to guarantee
 // the serialized JSON payload never exceeds 64 KB under any circumstance.
 const MAX_SAFE_CHUNK_BYTES = 52 * 1024;
-const SYNC_INTERVAL_MS = 10 * 60 * 30 * 1000; // 30 minutes
+const SYNC_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
 interface RegisteredSink {
   connectionId: string;
