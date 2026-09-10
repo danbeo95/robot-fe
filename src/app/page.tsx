@@ -1,68 +1,42 @@
 'use client'
 
-import Link from 'next/link';
-import { Layout, Typography, Button, Space, Tag } from 'antd';
-import { RobotOutlined, ApiOutlined, CheckCircleOutlined, DisconnectOutlined } from '@ant-design/icons';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import React from 'react'
+import { Layout, Typography } from 'antd'
+import { RobotOutlined } from '@ant-design/icons'
+import RobotList from './_components/RobotList'
 
-const { Header, Content } = Layout;
-const { Title } = Typography;
+const { Header, Content } = Layout
+const { Title } = Typography
 
-const baseWsUrl =
-  process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
-  process.env.WEBSOCKET_URL ||
-  'ws://localhost:8080';
-const wsUrl = `${baseWsUrl.replace(/\/$/, '')}/dashboard`;
-
-export default function Dashboard() {
-  const { isConnected, connect, disconnect } = useWebSocket(wsUrl);
-
-  const handleConnect = () => {
-    if (isConnected) {
-      disconnect();
-    } else {
-      connect();
-    }
-  };
-
+export default function RootFleetPage() {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ background: '#001529', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-          <Title level={2} style={{ color: 'white', margin: 0 }}>
-            🤖 Robot Fleet Dashboard
+    <Layout style={{ minHeight: '100vh', background: '#f5f7fb' }}>
+      {/* Top Navigation Header */}
+      <Header
+        style={{
+          background: '#001529',
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Title
+            level={4}
+            style={{ color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <RobotOutlined style={{ color: '#1890ff' }} />
+            Robot Fleet Management
           </Title>
         </div>
-        <Space>
-          <Link href="/robots">
-            <Button type="primary" icon={<RobotOutlined />}>
-              Robots List
-            </Button>
-          </Link>
-        </Space>
       </Header>
 
-      <Content style={{ padding: '24px' }}>
-        <div>
-          <h1>Robot Fleet Dashboard</h1>
-          <Space>
-            <Button
-              type={isConnected ? 'default' : 'primary'}
-              danger={isConnected}
-              icon={isConnected ? <DisconnectOutlined /> : <ApiOutlined />}
-              onClick={handleConnect}
-            >
-              {isConnected ? 'Disconnect' : 'Connect'}
-            </Button>
-            <Tag color={isConnected ? 'green' : 'default'} icon={isConnected ? <CheckCircleOutlined /> : <DisconnectOutlined />}>
-              {isConnected ? 'Connected' : 'Disconnected'}
-            </Tag>
-            <Link href="/robots">
-              <Button icon={<RobotOutlined />}>View Robots Fleet</Button>
-            </Link>
-          </Space>
-        </div>
+      {/* Main Content: Fleet overview stats, real-time alert banners, and robot cards */}
+      <Content style={{ padding: '24px 32px', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+        <RobotList showStats={true} />
       </Content>
     </Layout>
-  );
+  )
 }
