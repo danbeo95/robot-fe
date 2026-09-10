@@ -30,7 +30,7 @@ import {
 } from './_components'
 
 const { Header, Content } = Layout
-const { Title } = Typography
+const { Title, Text } = Typography
 
 export default function RobotDetailPage() {
   const params = useParams()
@@ -210,7 +210,10 @@ export default function RobotDetailPage() {
 
         {isRobotLoading && !robot ? (
           <div style={{ textAlign: 'center', padding: '100px 0' }}>
-            <Spin size="large" tip="Loading robot profile and telemetry..." />
+            <Space direction="vertical" align="center" size="middle">
+              <Spin size="large" />
+              <Text type="secondary">Loading robot profile and telemetry...</Text>
+            </Space>
           </div>
         ) : !robot ? (
           <Card style={{ textAlign: 'center', padding: 40, borderRadius: 12 }}>

@@ -112,7 +112,7 @@ export function RobotList({
           marginBottom: 20,
           boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
         }}
-        bodyStyle={{ padding: '16px 20px' }}
+        styles={{ body: { padding: '16px 20px' } }}
       >
         <Row justify="space-between" align="middle" gutter={[16, 16]}>
           <Col>
@@ -172,7 +172,10 @@ export function RobotList({
       {/* Main Content Area: Card Mode Only */}
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <Spin size="large" tip="Loading robots fleet..." />
+          <Space direction="vertical" align="center" size="middle">
+            <Spin size="large" />
+            <Text type="secondary">Loading robots fleet...</Text>
+          </Space>
         </div>
       ) : robots.length === 0 ? (
         <Card variant="borderless" style={{ borderRadius: 10, textAlign: 'center', padding: '40px 0' }}>

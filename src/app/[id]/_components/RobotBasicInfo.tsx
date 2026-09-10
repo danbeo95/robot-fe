@@ -65,7 +65,7 @@ function RobotBasicInfoBase({ robot, isLoading = false }: RobotBasicInfoProps) {
         marginBottom: 24,
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
       }}
-      bodyStyle={{ padding: 24 }}
+      styles={{ body: { padding: 24 } }}
     >
       <Row justify="space-between" align="middle" gutter={[16, 16]}>
         <Col xs={24} md={16}>
@@ -88,22 +88,18 @@ function RobotBasicInfoBase({ robot, isLoading = false }: RobotBasicInfoProps) {
               <RobotOutlined />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <Title level={3} style={{ margin: 0 }}>
+              <Space align="center" size={10}>
+                <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
                   Robot {robotId}
                 </Title>
-                <Tag color="blue" style={{ fontSize: 13, padding: '2px 8px' }}>
-                  ID: {robotId}
+                <Tag color={currentIsCharging ? 'green' : 'cyan'}>
+                  {currentIsCharging ? '⚡ Charging' : '● Online'}
                 </Tag>
-                {currentIsCharging ? (
-                  <Tag color="green">⚡ Charging</Tag>
-                ) : (
-                  <Tag color="cyan">● Active</Tag>
-                )}
-              </div>
+              </Space>
               <Paragraph
                 type="secondary"
-                style={{ margin: '6px 0 0 0', fontSize: 14, maxWidth: 800 }}
+                style={{ margin: '4px 0 0 0', maxWidth: 500, fontSize: 13 }}
+                ellipsis={{ rows: 2, tooltip: robot.descriptions || robot.description }}
               >
                 {robot.descriptions || robot.description || 'No description assigned.'}
               </Paragraph>
@@ -117,7 +113,7 @@ function RobotBasicInfoBase({ robot, isLoading = false }: RobotBasicInfoProps) {
               <ClockCircleOutlined style={{ marginRight: 4 }} />
               Last Telemetry Sync:
             </Text>
-            <Text strong style={{ fontSize: 14 }}>
+            <Text strong style={{ fontSize: 14 }} suppressHydrationWarning>
               {currentTimestamp
                 ? dayjs(currentTimestamp).format('YYYY-MM-DD HH:mm:ss')
                 : '—'}

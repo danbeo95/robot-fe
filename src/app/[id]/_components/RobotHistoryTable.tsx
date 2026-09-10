@@ -52,7 +52,13 @@ function RobotHistoryTableBase({
 }: RobotHistoryTableProps) {
   // Sort newest first and limit to maxRows
   const tableData = useMemo(() => {
-    return [...history].reverse().slice(0, maxRows)
+    return [...history]
+      .reverse()
+      .slice(0, maxRows)
+      .map((item, idx) => ({
+        ...item,
+        key: (item as any)._id || (item as any).id || `${item.timestamp}-${idx}`,
+      }))
   }, [history, maxRows])
 
   const columns = [
@@ -63,7 +69,7 @@ function RobotHistoryTableBase({
       render: (t: string) => (
         <Space size={4}>
           <ClockCircleOutlined style={{ color: '#8c8c8c' }} />
-          <span>{dayjs(t).format('HH:mm:ss')}</span>
+          <span suppressHydrationWarning>{dayjs(t).format('HH:mm:ss')}</span>
         </Space>
       ),
     },
@@ -130,16 +136,14 @@ function RobotHistoryTableBase({
           <span>Recent Telemetry Logs</span>
         </Space>
       }
-      bodyStyle={{ padding: 0 }}
+      styles={{ body: { padding: 0 } }}
     >
       <Table
         size="middle"
         loading={isLoading}
         columns={columns}
         dataSource={tableData}
-        rowKey={(record, idx) =>
-          record._id || record.robot_id || `${record.timestamp}-${idx}`
-        }
+        rowKey="key"
         pagination={false}
       />
     </Card>

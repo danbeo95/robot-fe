@@ -23,6 +23,9 @@ import {
   Legend,
 } from 'recharts'
 import { RobotHistoryItem } from '@/types/robot'
+import LogController from '@/utils/LogController'
+import logSyncService from '@/utils/logSyncService'
+import useTrackingLabel from '@/hooks/useTrackingLabel'
 
 export interface RobotHistoryChartProps {
   /** Array of historical telemetry records */
@@ -42,6 +45,15 @@ function RobotHistoryChartBase({
   onRefresh,
 }: RobotHistoryChartProps) {
   const [mounted, setMounted] = useState(false)
+  const [batteryHover, setBatteryHover] = useState(0)
+  const [wifiHover, setWifiHover] = useState(0)
+  const [tempHover, setTempHover] = useState(0)
+  const [overviewHover, setOverviewHover] = useState(0)
+
+  const batteryHoverLabel = useTrackingLabel({ currentValue: batteryHover, prefix: 'hover+battery' })
+  const wifiHoverLabel = useTrackingLabel({ currentValue: wifiHover, prefix: 'hover+wifi' })
+  const tempHoverLabel = useTrackingLabel({ currentValue: tempHover, prefix: 'hover+temp' })
+  const overviewHoverLabel = useTrackingLabel({ currentValue: overviewHover, prefix: 'hover+all-metrics' })
 
   useEffect(() => {
     setMounted(true)
@@ -101,6 +113,8 @@ function RobotHistoryChartBase({
           {/* Card 1: Battery Level (%) */}
           <Col xs={24} lg={12}>
             <Card
+              hoverable
+              onMouseEnter={() => setBatteryHover((prev) => prev + 1)}
               variant="borderless"
               style={{
                 borderRadius: 12,
@@ -114,13 +128,18 @@ function RobotHistoryChartBase({
                 </Space>
               }
               extra={
-                latestPoint && (
-                  <Tag color="green">
-                    Latest: {Math.round(latestPoint.battery)}%
-                  </Tag>
-                )
+                <Space size={8} align="center">
+                  <LogController exportLog={logSyncService.registerSink}>
+                    <small style={{ fontSize: 11 }}>{batteryHoverLabel}</small>
+                  </LogController>
+                  {latestPoint && (
+                    <Tag color="green">
+                      Latest: {Math.round(latestPoint.battery)}%
+                    </Tag>
+                  )}
+                </Space>
               }
-              bodyStyle={{ padding: '16px 20px 20px 10px' }}
+              styles={{ body: { padding: '16px 20px 20px 10px' } }}
             >
               <div style={{ width: '100%', height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -156,6 +175,8 @@ function RobotHistoryChartBase({
           {/* Card 2: WiFi Signal Strength (dBm) */}
           <Col xs={24} lg={12}>
             <Card
+              hoverable
+              onMouseEnter={() => setWifiHover((prev) => prev + 1)}
               variant="borderless"
               style={{
                 borderRadius: 12,
@@ -169,13 +190,18 @@ function RobotHistoryChartBase({
                 </Space>
               }
               extra={
-                latestPoint && (
-                  <Tag color="blue">
-                    Latest: {latestPoint.wifi} dBm
-                  </Tag>
-                )
+                <Space size={8} align="center">
+                  <LogController exportLog={logSyncService.registerSink}>
+                    <small style={{ fontSize: 11 }}>{wifiHoverLabel}</small>
+                  </LogController>
+                  {latestPoint && (
+                    <Tag color="blue">
+                      Latest: {latestPoint.wifi} dBm
+                    </Tag>
+                  )}
+                </Space>
               }
-              bodyStyle={{ padding: '16px 20px 20px 10px' }}
+              styles={{ body: { padding: '16px 20px 20px 10px' } }}
             >
               <div style={{ width: '100%', height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -211,6 +237,8 @@ function RobotHistoryChartBase({
           {/* Card 3: Temperature (°C) & RAM Usage (%) */}
           <Col xs={24} lg={12}>
             <Card
+              hoverable
+              onMouseEnter={() => setTempHover((prev) => prev + 1)}
               variant="borderless"
               style={{
                 borderRadius: 12,
@@ -224,18 +252,23 @@ function RobotHistoryChartBase({
                 </Space>
               }
               extra={
-                latestPoint && (
-                  <Space size={4}>
-                    <Tag color="orange">
-                      {latestPoint.temperature}°C
-                    </Tag>
-                    <Tag color="purple">
-                      {Math.round(latestPoint.memory)}% RAM
-                    </Tag>
-                  </Space>
-                )
+                <Space size={8} align="center">
+                  <LogController exportLog={logSyncService.registerSink}>
+                    <small style={{ fontSize: 11 }}>{tempHoverLabel}</small>
+                  </LogController>
+                  {latestPoint && (
+                    <Space size={4}>
+                      <Tag color="orange">
+                        {latestPoint.temperature}°C
+                      </Tag>
+                      <Tag color="purple">
+                        {Math.round(latestPoint.memory)}% RAM
+                      </Tag>
+                    </Space>
+                  )}
+                </Space>
               }
-              bodyStyle={{ padding: '16px 20px 20px 10px' }}
+              styles={{ body: { padding: '16px 20px 20px 10px' } }}
             >
               <div style={{ width: '100%', height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -273,6 +306,8 @@ function RobotHistoryChartBase({
           {/* Card 4: All Metrics Trends */}
           <Col xs={24} lg={12}>
             <Card
+              hoverable
+              onMouseEnter={() => setOverviewHover((prev) => prev + 1)}
               variant="borderless"
               style={{
                 borderRadius: 12,
@@ -285,8 +320,15 @@ function RobotHistoryChartBase({
                   <span>All Metrics Overview</span>
                 </Space>
               }
-              extra={<Tag color="purple">Composite</Tag>}
-              bodyStyle={{ padding: '16px 20px 20px 10px' }}
+              extra={
+                <Space size={8} align="center">
+                  <LogController exportLog={logSyncService.registerSink}>
+                    <small style={{ fontSize: 11 }}>{overviewHoverLabel}</small>
+                  </LogController>
+                  <Tag color="purple">Composite</Tag>
+                </Space>
+              }
+              styles={{ body: { padding: '16px 20px 20px 10px' } }}
             >
               <div style={{ width: '100%', height: 280 }}>
                 <ResponsiveContainer width="100%" height="100%">
