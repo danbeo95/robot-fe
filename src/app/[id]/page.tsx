@@ -3,7 +3,6 @@
 import React from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Layout,
   Typography,
@@ -21,8 +20,7 @@ import {
   ArrowLeftOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { RobotItem, RobotHistoryItem } from '@/types/robot'
-import { useRobotWebSocket } from '@/hooks/useRobotWebSocket'
+import { useRobot, useRobotHistory } from './hooks'
 import {
   RobotBasicInfo,
   RobotHistoryChart,
@@ -35,86 +33,23 @@ const { Title, Text } = Typography
 export default function RobotDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const queryClient = useQueryClient()
   const robotId = (params?.id as string) || ''
 
-  // 1. Fetch Basic Robot Information
+  // 1. Fetch Basic Robot Information & Live Telemetry listener
   const {
     data: robot,
     isLoading: isRobotLoading,
     error: robotError,
     refetch: refetchRobot,
-  } = useQuery<RobotItem>({
-    queryKey: ['robot', robotId],
-    queryFn: async () => {
-      const res = await fetch(`/api/robots/${robotId}`)
-      if (!res.ok) {
-        throw new Error(`Failed to fetch robot details (${res.status})`)
-      }
-      return res.json()
-    },
-    enabled: Boolean(robotId),
-  })
+    isWsConnected,
+  } = useRobot(robotId)
 
-  // 2. Fetch Historical Telemetry Data
+  // 2. Fetch Historical Telemetry Data & Live Append listener
   const {
     data: history = [],
     isLoading: isHistoryLoading,
     refetch: refetchHistory,
-  } = useQuery<RobotHistoryItem[]>({
-    queryKey: ['robot-history', robotId],
-    queryFn: async () => {
-      // Fetch up to 50 historical points in ascending chronological order for charts
-      const res = await fetch(`/api/robots/${robotId}/history?limit=50&sort=asc`)
-      if (!res.ok) {
-        throw new Error(`Failed to fetch history (${res.status})`)
-      }
-      return res.json()
-    },
-    enabled: Boolean(robotId),
-  })
-
-  // 3. Live WebSocket Telemetry listener for real-time updates
-  const { isConnected: isWsConnected } = useRobotWebSocket({
-    enabled: Boolean(robotId),
-    onTelemetry: (telemetry) => {
-      const incomingId = telemetry.id || telemetry.robotId
-      if (incomingId === robotId) {
-        // Real-time update into the active robot details cache
-        queryClient.setQueryData<RobotItem>(['robot', robotId], (prev) => {
-          if (!prev) return prev
-          return {
-            ...prev,
-            batteryPercentage: telemetry.batteryPercentage,
-            wifiSignalStrength: telemetry.wifiSignalStrength,
-            isCharging: telemetry.isCharging,
-            temperature: telemetry.temperature,
-            memoryUsage: telemetry.memoryUsage,
-            lastSeen: telemetry.timestamp,
-          }
-        })
-
-        // Real-time append into the historical charts data cache
-        queryClient.setQueryData<RobotHistoryItem[]>(
-          ['robot-history', robotId],
-          (prev = []) => {
-            const newPoint: RobotHistoryItem = {
-              _id: `live-${Date.now()}`,
-              robot_id: robotId,
-              robotId,
-              batteryPercentage: telemetry.batteryPercentage,
-              wifiSignalStrength: telemetry.wifiSignalStrength,
-              isCharging: telemetry.isCharging,
-              temperature: telemetry.temperature,
-              memoryUsage: telemetry.memoryUsage,
-              timestamp: telemetry.timestamp || new Date().toISOString(),
-            }
-            return [...prev.slice(-49), newPoint]
-          }
-        )
-      }
-    },
-  })
+  } = useRobotHistory(robotId)
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fb' }}>
@@ -187,7 +122,6 @@ export default function RobotDetailPage() {
           style={{ marginBottom: 16 }}
           items={[
             { title: <Link href="/">Dashboard</Link> },
-            { title: <Link href="/robots">Robots</Link> },
             { title: `Robot ${robotId}` },
           ]}
         />

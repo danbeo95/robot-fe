@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 import {
   Card,
   Button,
@@ -23,7 +22,7 @@ import {
 import { RobotItem as RobotItemType } from '@/types/robot'
 import RobotItem from './RobotItem'
 import RobotAlerts from './RobotAlerts'
-import { useRobotWebSocket } from '@/hooks/useRobotWebSocket'
+import { useRobotList } from '@/hooks/useRobotList'
 
 const { Text } = Typography
 
@@ -46,28 +45,16 @@ export function RobotList({
 }: RobotListProps) {
   const router = useRouter()
 
-  // 1. Fetch robots list via React Query
+  // 1. Fetch robots list via dedicated hook with real-time updates
   const {
     data: fetchedRobots = [],
     isLoading: isQueryLoading,
     isFetching,
     error: queryError,
     refetch,
-  } = useQuery<RobotItemType[]>({
-    queryKey: ['robots'],
-    queryFn: async () => {
-      const res = await fetch('/api/robots')
-      if (!res.ok) {
-        throw new Error(`Failed to fetch robots (status: ${res.status})`)
-      }
-      return res.json()
-    },
+    isWsConnected,
+  } = useRobotList({
     enabled: propRobots === undefined,
-  })
-
-  // 2. Listen to /robots WebSocket and update React Query cache in real-time
-  const { isConnected: isWsConnected } = useRobotWebSocket({
-    enabled: true,
   })
 
   const robots = propRobots ?? fetchedRobots
